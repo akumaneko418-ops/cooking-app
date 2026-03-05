@@ -108,7 +108,7 @@ export default function AdminRecipeFormScreen({ route, navigation }: any) {
         return false;
     };
 
-    // 戻る際の確認ダイアログ
+    // 戻る際の確認ダイアログ（Webとネイティブ両対応）
     React.useEffect(() => {
         const unsubscribe = navigation.addListener('beforeRemove', (e: any) => {
             if (!hasChanges() || isSavingRef.current) {
@@ -117,18 +117,26 @@ export default function AdminRecipeFormScreen({ route, navigation }: any) {
 
             e.preventDefault();
 
-            Alert.alert(
-                '変更内容の破棄',
-                '変更内容が保存されていません。前の画面に戻りますか？',
-                [
-                    { text: '編集を続ける', style: 'cancel', onPress: () => { } },
-                    {
-                        text: '破棄して戻る',
-                        style: 'destructive',
-                        onPress: () => navigation.dispatch(e.data.action),
-                    },
-                ]
-            );
+            if (Platform.OS === 'web') {
+                // Webの場合は window.confirm を使用
+                const confirmed = window.confirm('変更内容が保存されていません。前の画面に戻るがってよいですか？');
+                if (confirmed) {
+                    navigation.dispatch(e.data.action);
+                }
+            } else {
+                Alert.alert(
+                    '変更内容の破棄',
+                    '変更内容が保存されていません。前の画面に戻りますか？',
+                    [
+                        { text: '編集を続ける', style: 'cancel', onPress: () => { } },
+                        {
+                            text: '破棄して戻る',
+                            style: 'destructive',
+                            onPress: () => navigation.dispatch(e.data.action),
+                        },
+                    ]
+                );
+            }
         });
 
         return unsubscribe;
@@ -325,20 +333,29 @@ export default function AdminRecipeFormScreen({ route, navigation }: any) {
 
         try {
             await saveMasterRecipe(newRecipe);
-            // ナビゲーションブロックを解除してから画面を閉じる
+            // ナビゲーションブロックを解除して画面を閉じる
             isSavingRef.current = true;
-            Alert.alert("成功", "レシピを保存しました", [
-                {
-                    text: "OK",
-                    onPress: () => {
-                        // isSavingRef が true なので beforeRemove リスナーは通過する
-                        navigation.goBack();
+            if (Platform.OS === 'web') {
+                // Web上では Alert が動作しないため直接戻る
+                navigation.goBack();
+            } else {
+                Alert.alert("成功", "レシピを保存しました", [
+                    {
+                        text: "OK",
+                        onPress: () => {
+                            navigation.goBack();
+                        }
                     }
-                }
-            ]);
+                ]);
+            }
         } catch (error: any) {
             console.error('保存エラー:', error);
-            Alert.alert("エラー", `保存に失敗しました: ${error?.message || '不明なエラー'}`);
+            const msg = `保存に失敗しました: ${error?.message || '不明なエラー'}`;
+            if (Platform.OS === 'web') {
+                window.alert(msg);
+            } else {
+                Alert.alert("エラー", msg);
+            }
         }
     };
 

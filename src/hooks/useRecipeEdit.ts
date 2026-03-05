@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { saveMyRecipe } from '../utils/storage';
 import { formatAmount } from '../utils/nutritionUtils';
@@ -115,7 +115,12 @@ export function useRecipeEdit(navigation: any, route: any, ORIGINAL_RECIPE: any)
                 navigation.goBack();
             } catch (error: any) {
                 console.error('保存エラー詳細:', error);
-                Alert.alert('エラー', `レシピの保存に失敗しました: ${error?.message || '不明なエラー'}`);
+                const msg = `レシピの保存に失敗しました: ${error?.message || '不明なエラー'}`;
+                if (Platform.OS === 'web') {
+                    window.alert(msg);
+                } else {
+                    Alert.alert('エラー', msg);
+                }
             }
         };
 

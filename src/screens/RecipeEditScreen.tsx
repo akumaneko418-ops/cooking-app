@@ -135,29 +135,35 @@ export default function RecipeEditScreen({ route, navigation }: any) {
         return false;
     };
 
-    // 戻る際の確認ダイアログ
+    // 戻る際の確認ダイアログ（Webとネイティブ両対応）
     React.useEffect(() => {
         const unsubscribe = navigation.addListener('beforeRemove', (e: any) => {
             if (!hasChanges() || isSavingRef.current) {
                 return;
             }
 
-            // 保存済みの場合は確認不要 (handleSave内で navigation.goBack() される場合は hasChanges は true だが、beforeRemove 前に何らかのフラグで制御するか、Alertを出す)
-            // ここでは単純に変更があれば Alert を出す
             e.preventDefault();
 
-            Alert.alert(
-                '変更内容の破棄',
-                '変更内容が保存されていません。前の画面に戻りますか？',
-                [
-                    { text: '編集を続ける', style: 'cancel', onPress: () => { } },
-                    {
-                        text: '破棄して戻る',
-                        style: 'destructive',
-                        onPress: () => navigation.dispatch(e.data.action),
-                    },
-                ]
-            );
+            if (Platform.OS === 'web') {
+                // Webの場合は window.confirm を使用（Alert.alertは動作不可）
+                const confirmed = window.confirm('変更内容が保存されていません。前の画面に戻りますか？');
+                if (confirmed) {
+                    navigation.dispatch(e.data.action);
+                }
+            } else {
+                Alert.alert(
+                    '変更内容の破棄',
+                    '変更内容が保存されていません。前の画面に戻りますか？',
+                    [
+                        { text: '編集を続ける', style: 'cancel', onPress: () => { } },
+                        {
+                            text: '破棄して戻る',
+                            style: 'destructive',
+                            onPress: () => navigation.dispatch(e.data.action),
+                        },
+                    ]
+                );
+            }
         });
 
         return unsubscribe;
