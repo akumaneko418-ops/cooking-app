@@ -34,40 +34,56 @@ export default function AdminDashboardScreen({ navigation }: any) {
     );
 
     const handleDelete = (recipe: MasterRecipe) => {
-        Alert.alert(
-            "レシピの削除",
-            `「${recipe.title}」を削除してもよろしいですか？\nこの操作は取り消せません。`,
-            [
-                { text: "キャンセル", style: "cancel" },
-                {
-                    text: "削除",
-                    style: "destructive",
-                    onPress: async () => {
-                        await deleteMasterRecipe(recipe.id);
-                        loadRecipes();
+        const msg = `「${recipe.title}」を削除してもよろしいですか？\nこの操作は取り消せません。`;
+        if (Platform.OS === 'web') {
+            if (window.confirm(msg)) {
+                deleteMasterRecipe(recipe.id).then(() => loadRecipes());
+            }
+        } else {
+            Alert.alert(
+                "レシピの削除",
+                msg,
+                [
+                    { text: "キャンセル", style: "cancel" },
+                    {
+                        text: "削除",
+                        style: "destructive",
+                        onPress: async () => {
+                            await deleteMasterRecipe(recipe.id);
+                            loadRecipes();
+                        }
                     }
-                }
-            ]
-        );
+                ]
+            );
+        }
     };
 
     const handleReset = () => {
-        Alert.alert(
-            "初期化とキャッシュ削除",
-            "マスターデータは初期状態に戻り、今までに保存したマイレシピ・お気に入りはすべて削除されます。よろしいですか？",
-            [
-                { text: "キャンセル", style: "cancel" },
-                {
-                    text: "実行する",
-                    style: "destructive",
-                    onPress: async () => {
-                        await resetToInitialMasterRecipes(); // Supabase同期用(今は一応残す)
-                        await clearAllMyRecipesAndFavorites(); // バグデータの消去
-                        loadRecipes();
+        const msg = "マスターデータは初期状態に戻り、今までに保存したマイレシピ・お気に入りはすべて削除されます。よろしいですか？";
+        if (Platform.OS === 'web') {
+            if (window.confirm(msg)) {
+                resetToInitialMasterRecipes()
+                    .then(() => clearAllMyRecipesAndFavorites())
+                    .then(() => loadRecipes());
+            }
+        } else {
+            Alert.alert(
+                "初期化とキャッシュ削除",
+                msg,
+                [
+                    { text: "キャンセル", style: "cancel" },
+                    {
+                        text: "実行する",
+                        style: "destructive",
+                        onPress: async () => {
+                            await resetToInitialMasterRecipes();
+                            await clearAllMyRecipesAndFavorites();
+                            loadRecipes();
+                        }
                     }
-                }
-            ]
-        );
+                ]
+            );
+        }
     };
 
     const handleNavigateToForm = (recipe?: MasterRecipe) => {

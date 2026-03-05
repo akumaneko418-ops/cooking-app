@@ -125,19 +125,25 @@ export function useRecipeEdit(navigation: any, route: any, ORIGINAL_RECIPE: any)
         };
 
         if (isTitleEmpty || isIngredientsEmpty || isStepsEmpty) {
-            const emptyFields = [];
+            const emptyFields: string[] = [];
             if (isTitleEmpty) emptyFields.push('レシピ名');
             if (isIngredientsEmpty) emptyFields.push('材料');
             if (isStepsEmpty) emptyFields.push('作り方');
+            const msg = `${emptyFields.join('、')} が未記入です。\nこのまま保存しますか？`;
 
-            return Alert.alert(
-                '確認',
-                `${emptyFields.join('、')} が未記入です。\nこのまま保存しますか？`,
-                [
-                    { text: 'キャンセル', style: 'cancel' },
-                    { text: '保存する', onPress: () => { executeSave(); } }
-                ]
-            );
+            if (Platform.OS === 'web') {
+                if (window.confirm(msg)) {
+                    await executeSave();
+                }
+                return;
+            }
+
+            return new Promise<void>((resolve) => {
+                Alert.alert('確認', msg, [
+                    { text: 'キャンセル', style: 'cancel', onPress: () => resolve() },
+                    { text: '保存する', onPress: async () => { await executeSave(); resolve(); } }
+                ]);
+            });
         }
 
         await executeSave();
