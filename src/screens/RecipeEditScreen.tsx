@@ -114,6 +114,7 @@ export default function RecipeEditScreen({ route, navigation }: any) {
     const [myNote, setMyNote] = useState(initialRecipe.note || '');
     const myCategories = initialRecipe.categories || []; // 【追加】カテゴリを引き継ぐ
     const [expanded, setExpanded] = useState<'ingredients' | 'steps' | null>('ingredients');
+    const [footerExpanded, setFooterExpanded] = useState(true);
 
     // 変更があったかどうかを判定するための初期状態保存
     const initialDataRef = React.useRef({
@@ -744,17 +745,44 @@ export default function RecipeEditScreen({ route, navigation }: any) {
 
             </KeyboardAwareScrollView>
 
-            {/* 保存ボタン：固定フッター（常時表示） */}
+            {/* 保存ボタン：折りたたみ可能な固定フッター */}
             <View style={[styles.fixedFooter, {
                 backgroundColor: bgTheme.bg,
                 borderTopColor: bgTheme.subText + '22',
             }]}>
-                <AppButton
-                    title={isEditingExisting ? "✓ 変更を保存" : (isOriginal ? "✓ オリジナルレシピを保存" : "✓ このアレンジを保存")}
-                    type="primary"
-                    onPress={onSavePress}
-                />
-                <AppButton title="キャンセル" type="outline" onPress={() => navigation.goBack()} />
+                {/* 開閉ハンドル */}
+                <TouchableOpacity
+                    onPress={() => setFooterExpanded(v => !v)}
+                    style={{
+                        alignItems: 'center',
+                        paddingVertical: 4,
+                        marginBottom: footerExpanded ? 8 : 0,
+                    }}
+                    activeOpacity={0.7}
+                >
+                    <View style={{
+                        width: 36, height: 4, borderRadius: 2,
+                        backgroundColor: bgTheme.subText + '44',
+                        marginBottom: 2,
+                    }} />
+                    <Ionicons
+                        name={footerExpanded ? 'chevron-down' : 'chevron-up'}
+                        size={14}
+                        color={bgTheme.subText + '88'}
+                    />
+                </TouchableOpacity>
+
+                {/* ボタン本体（収納時は非表示） */}
+                {footerExpanded && (
+                    <>
+                        <AppButton
+                            title={isEditingExisting ? "✓ 変更を保存" : (isOriginal ? "✓ オリジナルレシピを保存" : "✓ このアレンジを保存")}
+                            type="primary"
+                            onPress={onSavePress}
+                        />
+                        <AppButton title="キャンセル" type="outline" onPress={() => navigation.goBack()} />
+                    </>
+                )}
             </View>
 
             {/* 保存成功バナー */}
@@ -923,8 +951,8 @@ const styles = StyleSheet.create({
     sectionTitle: { fontSize: 17, fontWeight: 'bold' },
     fixedFooter: {
         paddingHorizontal: 16,
-        paddingVertical: 12,
         paddingBottom: 20,
+        paddingTop: 4,
         borderTopWidth: 1,
         gap: 8,
     },
