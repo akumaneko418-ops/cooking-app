@@ -336,18 +336,22 @@ export default function RecipeEditScreen({ route, navigation }: any) {
     const { activeTheme, bgTheme } = useTheme();
 
     return (
-        <SafeAreaView style={styles.safeArea}>
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: bgTheme.bg }]}>
             {/* @ts-ignore */}
             <KeyboardAwareScrollView
                 style={{ flex: 1 }}
-                contentContainerStyle={styles.container}
+                contentContainerStyle={[styles.container, { paddingBottom: 100 }]}
                 keyboardShouldPersistTaps="handled"
                 enableOnAndroid={true}
                 extraScrollHeight={Platform.OS === 'ios' ? 20 : 250}
                 keyboardOpeningTime={0}
             >
                 {/* オリジナルとの違いを示す説明 または 完全新規画面用の説明 */}
-                <View style={[styles.infoBanner, isOriginal && { backgroundColor: '#FFF4E5' }]}>
+                <View style={[styles.infoBanner,
+                isOriginal
+                    ? { backgroundColor: activeTheme.color + '18', borderRadius: 10 }
+                    : { backgroundColor: activeTheme.color + '12', borderRadius: 10 }
+                ]}>
                     <Ionicons name={isOriginal ? "star" : "information-circle-outline"} size={18} color={isOriginal ? "#F57F17" : activeTheme.color} />
                     <Text style={[styles.infoText, { color: activeTheme.color }, isOriginal && { color: '#E65100' }]}>
                         {isOriginal
@@ -375,10 +379,10 @@ export default function RecipeEditScreen({ route, navigation }: any) {
                 </TouchableOpacity>
 
                 {/* タイトル編集 */}
-                <View style={styles.section}>
-                    <Text style={styles.fieldLabel}>レシピ名</Text>
+                <View style={[styles.section, { backgroundColor: bgTheme.surface }]}>
+                    <Text style={[styles.fieldLabel, { color: bgTheme.subText }]}>レシピ名</Text>
                     <TextInput
-                        style={styles.titleInput}
+                        style={[styles.titleInput, { color: bgTheme.text, backgroundColor: bgTheme.bg, borderColor: bgTheme.subText + '33' }]}
                         value={myTitle}
                         onChangeText={setMyTitle}
                         placeholder="例：我が家の特製カレー"
@@ -386,7 +390,7 @@ export default function RecipeEditScreen({ route, navigation }: any) {
                 </View>
 
                 {/* 材料編集セクション（「材料」タイトルを削除し、直接表示） */}
-                <View style={styles.section}>
+                <View style={[styles.section, { backgroundColor: bgTheme.surface }]}>
                     <>
                         {/* 食材セクション */}
                         <View style={styles.sectionHeader}>
@@ -656,7 +660,7 @@ export default function RecipeEditScreen({ route, navigation }: any) {
                 </View>
 
                 {/* 手順編集（アコーディオン） */}
-                < View style={styles.section} >
+                <View style={[styles.section, { backgroundColor: bgTheme.surface }]}>
                     <SectionHeader title="作り方" section="steps" />
                     {
                         expanded === 'steps' && (
@@ -668,7 +672,7 @@ export default function RecipeEditScreen({ route, navigation }: any) {
                                                 <Text style={styles.stepNumberText}>{index + 1}</Text>
                                             </View>
                                             <TextInput
-                                                style={styles.stepInput}
+                                                style={[styles.stepInput, { color: bgTheme.text, backgroundColor: bgTheme.bg, borderColor: bgTheme.subText + '33' }]}
                                                 value={step}
                                                 onChangeText={(v) => updateStep(index, v)}
                                                 placeholder={`手順 ${index + 1} を入力`}
@@ -717,8 +721,8 @@ export default function RecipeEditScreen({ route, navigation }: any) {
                                     </View>
                                 ))}
                                 <TouchableOpacity style={styles.addRowBtn} onPress={addStep}>
-                                    <Ionicons name="add-circle-outline" size={20} color="#FF6F61" />
-                                    <Text style={styles.addRowText}>手順を追加</Text>
+                                    <Ionicons name="add-circle-outline" size={20} color={activeTheme.color} />
+                                    <Text style={[styles.addRowText, { color: activeTheme.color }]}>手順を追加</Text>
                                 </TouchableOpacity>
                             </>
                         )
@@ -726,10 +730,10 @@ export default function RecipeEditScreen({ route, navigation }: any) {
                 </View >
 
                 {/* 自分メモ */}
-                < View style={styles.section} >
-                    <Text style={styles.fieldLabel}>🗒️ 自分用メモ（コツ・気づき）</Text>
+                <View style={[styles.section, { backgroundColor: bgTheme.surface }]}>
+                    <Text style={[styles.fieldLabel, { color: bgTheme.subText }]}>🗒️ 自分用メモ（コツ・気づき）</Text>
                     <TextInput
-                        style={styles.noteInput}
+                        style={[styles.noteInput, { color: bgTheme.text, backgroundColor: bgTheme.bg, borderColor: bgTheme.subText + '33' }]}
                         value={myNote}
                         onChangeText={setMyNote}
                         placeholder="例：少し味が濃かったので、次回は醤油を大さじ1減らしてみる。"
@@ -738,17 +742,20 @@ export default function RecipeEditScreen({ route, navigation }: any) {
                     />
                 </View >
 
-                {/* 保存ボタン */}
-                < View style={styles.buttonArea} >
-                    <AppButton
-                        title={isEditingExisting ? "✓ 変更を保存" : (isOriginal ? "✓ オリジナルレシピを保存" : "✓ このアレンジを保存")}
-                        type="primary"
-                        onPress={onSavePress}
-                    />
-                    <AppButton title="キャンセル" type="outline" onPress={() => navigation.goBack()} />
-                </View >
-
             </KeyboardAwareScrollView>
+
+            {/* 保存ボタン：固定フッター（常時表示） */}
+            <View style={[styles.fixedFooter, {
+                backgroundColor: bgTheme.bg,
+                borderTopColor: bgTheme.subText + '22',
+            }]}>
+                <AppButton
+                    title={isEditingExisting ? "✓ 変更を保存" : (isOriginal ? "✓ オリジナルレシピを保存" : "✓ このアレンジを保存")}
+                    type="primary"
+                    onPress={onSavePress}
+                />
+                <AppButton title="キャンセル" type="outline" onPress={() => navigation.goBack()} />
+            </View>
 
             {/* 保存成功バナー */}
             {saveSuccess && (
@@ -792,8 +799,8 @@ export default function RecipeEditScreen({ route, navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-    safeArea: { flex: 1, backgroundColor: '#F8F9FA' },
-    container: { padding: 16, paddingBottom: 40 },
+    safeArea: { flex: 1 },
+    container: { padding: 16 },
     infoBanner: {
         flexDirection: 'row',
         alignItems: 'flex-start',
@@ -805,7 +812,6 @@ const styles = StyleSheet.create({
     },
     infoText: { flex: 1, fontSize: 13, color: '#1565C0', lineHeight: 19 },
     section: {
-        backgroundColor: '#fff',
         borderRadius: 12,
         padding: 16,
         marginBottom: 16,
@@ -818,15 +824,12 @@ const styles = StyleSheet.create({
     sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
     addBtnSmall: { flexDirection: 'row', alignItems: 'center' },
     addBtnText: { marginLeft: 4, fontWeight: 'bold' },
-    fieldLabel: { fontSize: 14, fontWeight: 'bold', color: '#555', marginBottom: 8 },
+    fieldLabel: { fontSize: 14, fontWeight: 'bold', marginBottom: 8 },
     titleInput: {
         borderWidth: 1,
-        borderColor: '#E0E0E0',
-        borderRadius: 8,
+        borderRadius: 10,
         padding: 12,
         fontSize: 16,
-        color: '#333',
-        backgroundColor: '#FAFAFA',
     },
     // 画像設定部分のスタイル追加
     imagePickerBtn: {
@@ -891,11 +894,9 @@ const styles = StyleSheet.create({
     stepInput: {
         flex: 1,
         borderWidth: 1,
-        borderColor: '#E0E0E0',
-        borderRadius: 8,
+        borderRadius: 10,
         padding: 10,
         fontSize: 15,
-        backgroundColor: '#FAFAFA',
         minHeight: 48,
     },
     addRowBtn: {
@@ -905,14 +906,12 @@ const styles = StyleSheet.create({
         paddingTop: 14,
         paddingHorizontal: 4,
     },
-    addRowText: { fontSize: 15, color: '#FF6F61', fontWeight: 'bold' },
+    addRowText: { fontSize: 15, fontWeight: 'bold' },
     noteInput: {
         borderWidth: 1,
-        borderColor: '#E0E0E0',
-        borderRadius: 8,
+        borderRadius: 10,
         padding: 12,
         fontSize: 15,
-        backgroundColor: '#FAFAFA',
         minHeight: 110,
         textAlignVertical: 'top',
     },
@@ -921,7 +920,14 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 8,
     },
-    sectionTitle: { fontSize: 17, fontWeight: 'bold', color: '#333' },
+    sectionTitle: { fontSize: 17, fontWeight: 'bold' },
+    fixedFooter: {
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        paddingBottom: 20,
+        borderTopWidth: 1,
+        gap: 8,
+    },
     input: {
         borderWidth: 1,
         borderColor: '#E0E0E0',
