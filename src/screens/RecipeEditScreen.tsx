@@ -757,9 +757,16 @@ export default function RecipeEditScreen({ route, navigation }: any) {
                     top: 0, left: 0, right: 0, bottom: 0,
                     justifyContent: 'center',
                     alignItems: 'center',
-                    backgroundColor: 'rgba(255,255,255,0.88)',
                     zIndex: 999,
                 }}>
+                    {/* テーマカラーに合わせた背景（ライト→白、ダーク→暗色） */}
+                    <View style={{
+                        position: 'absolute',
+                        top: 0, left: 0, right: 0, bottom: 0,
+                        backgroundColor: bgTheme.bg,
+                        opacity: 0.88,
+                    }} />
+                    {/* カード本体（背景の opacity の影響を受けない） */}
                     <View style={{
                         backgroundColor: bgTheme.surface,
                         borderRadius: 20,
