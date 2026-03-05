@@ -346,6 +346,12 @@ export default function RecipeEditScreen({ route, navigation }: any) {
                 enableOnAndroid={true}
                 extraScrollHeight={Platform.OS === 'ios' ? 20 : 250}
                 keyboardOpeningTime={0}
+                onScroll={(e: any) => {
+                    const { layoutMeasurement, contentOffset, contentSize } = e.nativeEvent;
+                    const isNearBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 50;
+                    if (isNearBottom) setFooterExpanded(true);
+                }}
+                scrollEventThrottle={100}
             >
                 {/* オリジナルとの違いを示す説明 または 完全新規画面用の説明 */}
                 <View style={[styles.infoBanner,
