@@ -742,7 +742,7 @@ export default function RecipeEditScreen({ route, navigation }: any) {
                     <AppButton
                         title={isEditingExisting ? "✓ 変更を保存" : (isOriginal ? "✓ オリジナルレシピを保存" : "✓ このアレンジを保存")}
                         type="primary"
-                        onPress={handleSave}
+                        onPress={onSavePress}
                     />
                     <AppButton title="キャンセル" type="outline" onPress={() => navigation.goBack()} />
                 </View >
