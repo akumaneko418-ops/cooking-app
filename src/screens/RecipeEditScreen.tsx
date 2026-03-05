@@ -61,6 +61,7 @@ export default function RecipeEditScreen({ route, navigation }: any) {
         handleSave,
         sortIngredientsByGroup,
         isSavingRef,
+        saveSuccess,
         isOriginal,
         isEditingExisting,
         initialRecipe
@@ -748,6 +749,34 @@ export default function RecipeEditScreen({ route, navigation }: any) {
                 </View >
 
             </KeyboardAwareScrollView>
+
+            {/* 保存成功バナー */}
+            {saveSuccess && (
+                <View style={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(0,0,0,0.35)',
+                    zIndex: 999,
+                }}>
+                    <View style={{
+                        backgroundColor: '#2e7d32',
+                        borderRadius: 16,
+                        paddingVertical: 24,
+                        paddingHorizontal: 40,
+                        alignItems: 'center',
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 8,
+                        elevation: 10,
+                    }}>
+                        <Text style={{ fontSize: 36, marginBottom: 8 }}>✅</Text>
+                        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#fff' }}>保存しました！</Text>
+                    </View>
+                </View>
+            )}
         </SafeAreaView >
     );
 }

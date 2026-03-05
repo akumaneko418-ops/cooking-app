@@ -27,6 +27,7 @@ export function useRecipeEdit(navigation: any, route: any, ORIGINAL_RECIPE: any)
 
     // state definitions (excluding ingredients/steps for now to limit hook complexity if they are heavily UI-bound, but we can move image/save logic)
     const [myImage, setMyImage] = useState<string | null>(initialRecipe.imageUrl || null);
+    const [saveSuccess, setSaveSuccess] = useState(false);
     const isSavingRef = useRef(false);
 
     const pickImage = async () => {
@@ -112,14 +113,9 @@ export function useRecipeEdit(navigation: any, route: any, ORIGINAL_RECIPE: any)
                 });
                 console.log('保存成功');
                 isSavingRef.current = true;
-                if (Platform.OS === 'web') {
-                    // Web では Alert が動作しないので直接戻る
-                    navigation.goBack();
-                } else {
-                    // アラートを表示し、1.5秒後に自動で前の画面に戻る
-                    Alert.alert('保存しました', 'レシピを保存しました！');
-                    setTimeout(() => navigation.goBack(), 1500);
-                }
+                // プラットフォーム問わず、画面内バナーを表示して1.5秒後に戻る
+                setSaveSuccess(true);
+                setTimeout(() => navigation.goBack(), 1500);
             } catch (error: any) {
                 console.error('保存エラー詳細:', error);
                 const msg = `レシピの保存に失敗しました: ${error?.message || '不明なエラー'}`;
@@ -164,6 +160,7 @@ export function useRecipeEdit(navigation: any, route: any, ORIGINAL_RECIPE: any)
         handleSave,
         sortIngredientsByGroup,
         isSavingRef,
+        saveSuccess,
         isOriginal,
         isEditingExisting,
         initialRecipe
