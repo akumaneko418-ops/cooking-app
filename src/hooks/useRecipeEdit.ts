@@ -116,9 +116,9 @@ export function useRecipeEdit(navigation: any, route: any, ORIGINAL_RECIPE: any)
                     // Web では Alert が動作しないので直接戻る
                     navigation.goBack();
                 } else {
-                    Alert.alert('保存しました', 'レシピを保存しました！', [
-                        { text: 'OK', onPress: () => navigation.goBack() }
-                    ]);
+                    // アラートを表示し、1.5秒後に自動で前の画面に戻る
+                    Alert.alert('保存しました', 'レシピを保存しました！');
+                    setTimeout(() => navigation.goBack(), 1500);
                 }
             } catch (error: any) {
                 console.error('保存エラー詳細:', error);
