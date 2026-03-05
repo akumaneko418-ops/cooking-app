@@ -112,7 +112,14 @@ export function useRecipeEdit(navigation: any, route: any, ORIGINAL_RECIPE: any)
                 });
                 console.log('保存成功');
                 isSavingRef.current = true;
-                navigation.goBack();
+                if (Platform.OS === 'web') {
+                    // Web では Alert が動作しないので直接戻る
+                    navigation.goBack();
+                } else {
+                    Alert.alert('保存しました', 'レシピを保存しました！', [
+                        { text: 'OK', onPress: () => navigation.goBack() }
+                    ]);
+                }
             } catch (error: any) {
                 console.error('保存エラー詳細:', error);
                 const msg = `レシピの保存に失敗しました: ${error?.message || '不明なエラー'}`;
