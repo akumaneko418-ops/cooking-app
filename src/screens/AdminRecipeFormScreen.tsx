@@ -325,12 +325,20 @@ export default function AdminRecipeFormScreen({ route, navigation }: any) {
 
         try {
             await saveMasterRecipe(newRecipe);
+            // ナビゲーションブロックを解除してから画面を閉じる
             isSavingRef.current = true;
             Alert.alert("成功", "レシピを保存しました", [
-                { text: "OK", onPress: () => navigation.goBack() }
+                {
+                    text: "OK",
+                    onPress: () => {
+                        // isSavingRef が true なので beforeRemove リスナーは通過する
+                        navigation.goBack();
+                    }
+                }
             ]);
-        } catch (error) {
-            Alert.alert("エラー", "保存に失敗しました");
+        } catch (error: any) {
+            console.error('保存エラー:', error);
+            Alert.alert("エラー", `保存に失敗しました: ${error?.message || '不明なエラー'}`);
         }
     };
 

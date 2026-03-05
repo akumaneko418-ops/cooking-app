@@ -107,15 +107,15 @@ export function useRecipeEdit(navigation: any, route: any, ORIGINAL_RECIPE: any)
                     ingredients: formattedIngredients,
                     steps: validSteps,
                     stepTips: myStepTips.filter((_: any, i: number) => mySteps[i]?.trim() !== ''),
-                    note: myNote,
-                    categories: myCategories,
+                    note: myNote || '',  // undefined・null対策
+                    categories: myCategories || [],
                 });
                 console.log('保存成功');
                 isSavingRef.current = true;
                 navigation.goBack();
-            } catch (error) {
-                console.error('保存エラー:', error);
-                Alert.alert('エラー', 'レシピの保存に失敗しました');
+            } catch (error: any) {
+                console.error('保存エラー詳細:', error);
+                Alert.alert('エラー', `レシピの保存に失敗しました: ${error?.message || '不明なエラー'}`);
             }
         };
 
