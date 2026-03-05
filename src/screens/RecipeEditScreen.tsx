@@ -757,23 +757,26 @@ export default function RecipeEditScreen({ route, navigation }: any) {
                     top: 0, left: 0, right: 0, bottom: 0,
                     justifyContent: 'center',
                     alignItems: 'center',
-                    backgroundColor: 'rgba(0,0,0,0.35)',
+                    backgroundColor: 'rgba(0,0,0,0.25)',
                     zIndex: 999,
                 }}>
                     <View style={{
-                        backgroundColor: '#2e7d32',
-                        borderRadius: 16,
-                        paddingVertical: 24,
-                        paddingHorizontal: 40,
+                        backgroundColor: bgTheme.surface,
+                        borderRadius: 20,
+                        paddingVertical: 28,
+                        paddingHorizontal: 48,
                         alignItems: 'center',
                         shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 4 },
-                        shadowOpacity: 0.3,
-                        shadowRadius: 8,
-                        elevation: 10,
+                        shadowOffset: { width: 0, height: 6 },
+                        shadowOpacity: 0.15,
+                        shadowRadius: 12,
+                        elevation: 12,
+                        borderTopWidth: 4,
+                        borderTopColor: activeTheme.color,
                     }}>
-                        <Text style={{ fontSize: 36, marginBottom: 8 }}>✅</Text>
-                        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#fff' }}>保存しました！</Text>
+                        <Ionicons name="checkmark-circle" size={52} color={activeTheme.color} style={{ marginBottom: 12 }} />
+                        <Text style={{ fontSize: 18, fontWeight: 'bold', color: bgTheme.text }}>保存しました！</Text>
+                        <Text style={{ fontSize: 13, color: bgTheme.subText, marginTop: 4 }}>レシピを保存しました</Text>
                     </View>
                 </View>
             )}
