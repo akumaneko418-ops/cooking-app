@@ -757,7 +757,7 @@ export default function RecipeEditScreen({ route, navigation }: any) {
                     top: 0, left: 0, right: 0, bottom: 0,
                     justifyContent: 'center',
                     alignItems: 'center',
-                    backgroundColor: 'rgba(0,0,0,0.25)',
+                    backgroundColor: 'rgba(255,255,255,0.88)',
                     zIndex: 999,
                 }}>
                     <View style={{
