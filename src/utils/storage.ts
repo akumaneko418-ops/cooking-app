@@ -405,6 +405,98 @@ export const isFavorite = async (id: string): Promise<boolean> => {
 };
 
 /**
+ * マスターレシピを保存・更新する
+ */
+export const saveMasterRecipe = async (recipe: MasterRecipe): Promise<void> => {
+    try {
+        // 1. Supabase DB を更新 (Upsertを使用)
+        const isSupabaseId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(recipe.id);
+        const recipeData = {
+            title: recipe.title,
+            time_required: recipe.time,
+            image_url: recipe.imageUrl,
+            difficulty_level: recipe.difficultyLevel,
+            categories: recipe.categories,
+            base_servings: recipe.baseServings,
+        };
+        // UUID形式の場合はIDも指定して更新、そうでない場合は新規作成（IDは自動生成させる想定）
+        if (isSupabaseId) {
+            (recipeData as any).id = recipe.id;
+        }
+
+        const { data: savedRecipeArray, error: recipeError } = await supabase
+            .from('recipes')
+            .upsert(recipeData, { onConflict: 'id' })
+            .select('id');
+
+        if (recipeError || !savedRecipeArray || savedRecipeArray.length === 0) {
+            console.error('Supabaseレシピ更新エラー:', recipeError?.message);
+            throw new Error('クラウドのレシピ保存に失敗しました');
+        }
+
+        const realRecipeId = savedRecipeArray[0].id;
+        const newRecipeWithId = { ...recipe, id: realRecipeId };
+
+        // 手順の更新 (一度削除して再作成)
+        await supabase.from('recipe_steps').delete().eq('recipe_id', realRecipeId);
+        if (recipe.steps.length > 0) {
+            await supabase.from('recipe_steps').insert(
+                recipe.steps.map((instruction, index) => ({
+                    recipe_id: realRecipeId,
+                    step_number: index + 1,
+                    instruction
+                }))
+            );
+        }
+
+        // 材料の更新 (一度削除して再作成)
+        await supabase.from('recipe_ingredients').delete().eq('recipe_id', realRecipeId);
+        for (const ing of recipe.ingredients) {
+            if (!ing.name) continue;
+            let ingredientId = null;
+            // 既存の材料を探す
+            const { data: existingIng } = await supabase.from('ingredients').select('id').eq('name', ing.name).single();
+            if (existingIng) {
+                ingredientId = existingIng.id;
+            } else {
+                // 新規の材料を作成
+                const { data: newIng, error: ingErr } = await supabase.from('ingredients').insert({ name: ing.name }).select('id').single();
+                if (newIng && !ingErr) ingredientId = newIng.id;
+            }
+
+            if (ingredientId) {
+                await supabase.from('recipe_ingredients').insert({
+                    recipe_id: realRecipeId,
+                    ingredient_id: ingredientId,
+                    amount: ing.amount,
+                    unit: ing.unit,
+                    gram_per_unit: ing.gramPerUnit || null,
+                    group: ing.group || null,
+                    is_seasoning: ing.is_seasoning || false
+                });
+            }
+        }
+
+        // 2. ローカルキャッシュを直接読み書き
+        const jsonValue = await AsyncStorage.getItem(MASTER_RECIPES_KEY);
+        const recipes: MasterRecipe[] = jsonValue ? JSON.parse(jsonValue) : INITIAL_MASTER_RECIPES;
+
+        const index = recipes.findIndex(r => r.id === recipe.id);
+        let updated: MasterRecipe[];
+        if (index >= 0) {
+            updated = [...recipes];
+            updated[index] = newRecipeWithId;
+        } else {
+            updated = [newRecipeWithId, ...recipes];
+        }
+        await AsyncStorage.setItem(MASTER_RECIPES_KEY, JSON.stringify(updated));
+    } catch (error) {
+        console.error('マスターレシピの保存に失敗しました:', error);
+        throw error;
+    }
+};
+
+/**
  * マスターレシピ一覧を取得する（管理用データ＋本番表示用）
  */
 export const getMasterRecipes = async (): Promise<MasterRecipe[]> => {
@@ -469,93 +561,6 @@ export const getMasterRecipes = async (): Promise<MasterRecipe[]> => {
     } catch (error) {
         console.error('マスターレシピの取得時に例外発生:', error);
         return INITIAL_MASTER_RECIPES;
-    }
-};
-
-/**
- * マスターレシピを保存・更新する (今はCMSがないので一旦ダミー維持、今後Supabase用にする)
- */
-export const saveMasterRecipe = async (recipe: MasterRecipe): Promise<void> => {
-    try {
-        // 1. Supabase DB を更新（idがUUID形式 = Supabaseから取得したレシピの場合）
-        const isSupabaseId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(recipe.id);
-        if (isSupabaseId) {
-            // 基本情報の更新
-            const { error: recipeError } = await supabase
-                .from('recipes')
-                .update({
-                    title: recipe.title,
-                    time_required: recipe.time,
-                    image_url: recipe.imageUrl,
-                    difficulty_level: recipe.difficultyLevel,
-                    categories: recipe.categories,
-                    base_servings: recipe.baseServings,
-                })
-                .eq('id', recipe.id);
-
-            if (recipeError) {
-                console.error('Supabaseレシピ更新エラー:', recipeError.message);
-                throw new Error('クラウドのレシピ更新に失敗しました: ' + recipeError.message);
-            }
-
-            // 手順の更新 (一度削除して再作成)
-            await supabase.from('recipe_steps').delete().eq('recipe_id', recipe.id);
-            if (recipe.steps.length > 0) {
-                await supabase.from('recipe_steps').insert(
-                    recipe.steps.map((instruction, index) => ({
-                        recipe_id: recipe.id,
-                        step_number: index + 1,
-                        instruction
-                    }))
-                );
-            }
-
-            // 材料の更新 (一度削除して再作成)
-            await supabase.from('recipe_ingredients').delete().eq('recipe_id', recipe.id);
-            for (const ing of recipe.ingredients) {
-                if (!ing.name) continue;
-                let ingredientId = null;
-                // 既存の材料を探す
-                const { data: existingIng } = await supabase.from('ingredients').select('id').eq('name', ing.name).single();
-                if (existingIng) {
-                    ingredientId = existingIng.id;
-                } else {
-                    // 新規の材料を作成
-                    const { data: newIng, error: ingErr } = await supabase.from('ingredients').insert({ name: ing.name }).select('id').single();
-                    if (newIng && !ingErr) ingredientId = newIng.id;
-                }
-
-                if (ingredientId) {
-                    await supabase.from('recipe_ingredients').insert({
-                        recipe_id: recipe.id,
-                        ingredient_id: ingredientId,
-                        amount: ing.amount,
-                        unit: ing.unit,
-                        gram_per_unit: ing.gramPerUnit || null,
-                        group: ing.group || null,
-                        is_seasoning: ing.is_seasoning || false
-                    });
-                }
-            }
-        }
-
-        // 2. ローカルキャッシュを直接読み書き（getMasterRecipes() を使うと
-        //    Supabaseから再取得してimage_urlが消えてしまうため AsyncStorage を直接使う）
-        const jsonValue = await AsyncStorage.getItem(MASTER_RECIPES_KEY);
-        const recipes: MasterRecipe[] = jsonValue ? JSON.parse(jsonValue) : INITIAL_MASTER_RECIPES;
-
-        const index = recipes.findIndex(r => r.id === recipe.id);
-        let updated: MasterRecipe[];
-        if (index >= 0) {
-            updated = [...recipes];
-            updated[index] = recipe;
-        } else {
-            updated = [recipe, ...recipes];
-        }
-        await AsyncStorage.setItem(MASTER_RECIPES_KEY, JSON.stringify(updated));
-    } catch (error) {
-        console.error('マスターレシピの保存に失敗しました:', error);
-        throw error;
     }
 };
 

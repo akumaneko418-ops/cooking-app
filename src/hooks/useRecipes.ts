@@ -9,17 +9,14 @@ export function useRecipes() {
 
   // データの読み込み
   const loadData = useCallback(async () => {
-    // 最初の読み込み時のみloadingをtrueにする処理は使う側で行うか、ここで管理するか
     setLoading(true);
     try {
-      const [favs, masterRecipes] = await Promise.all([
-        getFavorites(),
-        getMasterRecipes(),
-      ]);
-      setFavorites(favs);
+      const masterRecipes = await getMasterRecipes();
       setRecipes(masterRecipes);
+      const favoriteRecipes = await getFavorites();
+      setFavorites(favoriteRecipes);
     } catch (error) {
-      console.error("Failed to load data:", error);
+      console.error("Failed to load recipes or favorites:", error);
     } finally {
       setLoading(false);
     }
