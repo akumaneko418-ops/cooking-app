@@ -1,0 +1,11 @@
+- [x] `react-native-svg` のインストール
+- [x] `ThemeContext.tsx` への背景パターン状態の追加および AsyncStorage 保存処理の実装
+- [x] 最背面に敷き詰める共通の SVGパターン描画コンポーネント `BackgroundPattern.tsx` の構築
+- [x] `HomeScreen.tsx` への背景コンポーネントの配置
+- [x] `SearchScreen.tsx` への背景コンポーネントの配置
+- [x] `MyRecipesScreen.tsx` への背景コンポーネントの配置
+- [x] `RecipeDetailScreen.tsx` への背景コンポーネントの配置
+- [x] `SettingsScreen.tsx` への背景パターン選択UI（プレビュー用ボタン群）の追加
+- [x] 管理者ダッシュボードのゴミ箱（削除）ボタンの機能修正（Supabaseからのレコード削除を追加）
+- [x] ボトムタブメニューにおける、Web版非アクティブ時（未選択時）にアイコンが消えてレイアウトが崩れる問題の修正（`App.tsx` にてアウトラインアイコンを廃止し、色で区別するよう改良）
+- [x] 最終ビルド(`npx expo export -p web`)の実行
